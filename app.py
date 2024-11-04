@@ -15,8 +15,9 @@ users = {
 ADMIN_USERNAME = 'shaikha'
 ADMIN_PASSWORD = 'shaikha1'
 
-# مسار ملف CSV بعد نقله إلى static
-csv_file_path = 'static/images.csv'
+# استخدام مسار مطلق للملف
+csv_file_path = os.path.join(app.root_path, 'static', 'images.csv')
+print("CSV file path:", csv_file_path)  # للتأكد من مسار الملف
 
 # Ensure the CSV file exists on start
 def ensure_csv_exists():
