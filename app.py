@@ -1,11 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory
 import csv
 import os
-
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # استبدلي هذا المفتاح بمفتاح آمن
+app.secret_key = 'your_secret_key'  # Replace with a secure key
 
-# قاعدة بيانات وهمية (يمكنك استبدالها بقاعدة بيانات حقيقية أو عملية تحقق خارجية)
+# Dummy databases (replace with a real database or external authentication)
 users = {
     'Dr. Laith': 'Laith123',
     'Dr. Abdullah': 'Abdullah123',
@@ -15,92 +14,94 @@ users = {
 ADMIN_USERNAME = 'shaikha'
 ADMIN_PASSWORD = 'shaikha1'
 
-# الصفحة الرئيسية
+# Home page route to display the welcome page with options for user and admin login
 @app.route('/')
 def home():
-    return render_template('welcome.html')  # عرض صفحة الترحيب بخيارات تسجيل الدخول
+    return render_template('welcome.html')  # Show welcome page with login options
 
-# تسجيل دخول المستخدم
+# User login route
 @app.route('/user_login', methods=['GET', 'POST'])
 def user_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-        # تحقق من وجود المستخدم وصحة كلمة المرور
+        # Check if the user exists and the password matches
         if username in users and users[username] == password:
-            session['username'] = username  # حفظ اسم المستخدم في الجلسة
-            return redirect(url_for('label'))  # الانتقال إلى صفحة التصنيف
+            session['username'] = username  # Save the username in session
+            return redirect(url_for('label'))  # Redirect to the labeling page
         else:
             return "Invalid username or password."
 
-    return render_template('user_login.html')  # عرض صفحة تسجيل دخول المستخدم
+    return render_template('user_login.html')  # Render the user login page
 
-# صفحة التصنيف (تتطلب تسجيل الدخول)
+# Labeling page (only accessible if logged in as a user)
 @app.route('/label')
 def label():
     if 'username' in session:
         username = session['username']
-        return render_template('index.html', username=username)  # عرض صفحة التصنيف
+        return render_template('index.html', username=username)  # Show labeling page
     else:
-        return redirect(url_for('user_login'))  # الانتقال إلى تسجيل الدخول إذا لم يتم تسجيل الدخول
+        return redirect(url_for('user_login'))  # Redirect to user login if not logged in
 
-# تسجيل دخول المشرف
+# Admin login route
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-        # تحقق من بيانات المشرف
+        # Check admin credentials
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-            session['admin'] = True  # حفظ حالة المشرف في الجلسة
-            return redirect(url_for('admin_dashboard'))  # الانتقال إلى لوحة المشرف
+            session['admin'] = True  # Save admin status in session
+            return redirect(url_for('admin_dashboard'))  # Redirect to admin dashboard
         else:
             return "Invalid admin credentials."
 
-    return render_template('admin_login.html')  # عرض صفحة تسجيل دخول المشرف
+    return render_template('admin_login.html')  # Render the admin login page
 
-# لوحة المشرف (تتطلب تسجيل الدخول كمشرف)
+# Admin dashboard route (only accessible if logged in as admin)
 @app.route('/admin_dashboard')
 def admin_dashboard():
-    if not session.get('admin'):  # تحقق من تسجيل الدخول كمشرف
-        return redirect(url_for('admin_login'))  # الانتقال إلى تسجيل دخول المشرف إذا لم يتم تسجيل الدخول
+    if not session.get('admin'):  # Check if admin is logged in
+        return redirect(url_for('admin_login'))  # Redirect to admin login if not logged in
 
-    csv_file_path = 'images.csv'  # مسار ملف CSV
+    csv_file_path = 'images.csv'  # Path to the CSV file
 
     total_images = 0
     normal_images = 0
     cataract_images = 0
 
-    # متابعة عدد الصور التي قام كل مستخدم بتصنيفها
+    # Track how many images each user has labeled
     user_labels_normal = {user: 0 for user in users}  
     user_labels_cataract = {user: 0 for user in users}
 
-    # قراءة ملف CSV وحساب التصنيفات
+    # Read the CSV file and count labels
     try:
         with open(csv_file_path, mode='r') as file:
             csv_reader = csv.DictReader(file)
             for row in csv_reader:
                 total_images += 1
                 if 'normal' in row['imagePath'].lower():
-                    normal_images += 1  # عدد الصور الطبيعية
+                    normal_images += 1  # Count normal images
+                    # Count labels for normal images
                     for user in users:
                         if row[f'label_{user}'] != 'Null':
                             user_labels_normal[user] += 1
                 else:
-                    cataract_images += 1  # عدد صور الكتاركت
+                    cataract_images += 1  # Count cataract images
+                    # Count labels for cataract images
                     for user in users:
                         if row[f'label_{user}'] != 'Null':
                             user_labels_cataract[user] += 1
 
-        # حساب النسب
+        # Calculate percentages
         total_labeled = {user: user_labels_normal[user] + user_labels_cataract[user] for user in users}
         labeled_percentage_normal = {user: (user_labels_normal[user] / normal_images) * 100 if normal_images > 0 else 0 for user in users}
         labeled_percentage_cataract = {user: (user_labels_cataract[user] / cataract_images) * 100 if cataract_images > 0 else 0 for user in users}
         labeled_percentage_total = {user: (total_labeled[user] / total_images) * 100 if total_images > 0 else 0 for user in users}
 
-        # عرض لوحة التحكم مع البيانات
+        # Render the dashboard with the data
         return render_template(
             'admin_dashboard.html',
             total_images=total_images,
@@ -118,24 +119,94 @@ def admin_dashboard():
         print(f"Error reading CSV file: {e}")
         return "Error reading CSV file", 500
 
-# تنزيل ملف CSV
+
+# Route to get images for the labeling process (user-specific logic)
+@app.route('/get_images', methods=['GET'])
+def get_images():
+    image_urls = []
+    username = session.get('username')  # Get the current logged-in user
+    csv_file_path = 'images.csv'  # Path to the CSV file
+
+    # Read the CSV file and get image paths for images not labeled by the current user
+    try:
+        with open(csv_file_path, mode='r') as file:
+            csv_reader = csv.DictReader(file)
+            label_column = f'label_{username}'  # Determine which column corresponds to the logged-in user
+
+            for row in csv_reader:
+                if row[label_column] == 'Null':  # Check if the image has not been labeled by the user
+                    image_urls.append(row['imagePath'])  # Add image path to list
+
+        # Return image paths as JSON
+        return jsonify(image_urls)
+
+    except Exception as e:
+        print(f"Error reading CSV file: {e}")
+        return jsonify([]), 500
+
+# Custom route to serve images from the Dataset folder
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    return send_from_directory('Dataset', filename)
+
+# Route for saving the label in the CSV file (example logic)
+@app.route('/save_label', methods=['POST'])
+def save_label():
+    if 'username' in session:
+        try:
+            data = request.json
+            image_url = data['imagePath']
+            label = data['label']
+            username = session.get('username')  # Get the logged-in user's name
+
+            csv_file_path = 'images.csv'
+            rows = []
+
+            # Read and update the CSV
+            with open(csv_file_path, mode='r') as file:
+                csv_reader = csv.DictReader(file)
+                for row in csv_reader:
+                    if row['imagePath'] == image_url:
+                        row[f'label_{username}'] = label  # Update the corresponding label
+                    rows.append(row)
+
+            # Write the updated rows back to the CSV
+            with open(csv_file_path, mode='w', newline='') as file:
+                fieldnames = ['id', 'imagePath', 'label_user1', 'label_user2', 'label_user3']
+                csv_writer = csv.DictWriter(file, fieldnames=fieldnames)
+                csv_writer.writeheader()
+                csv_writer.writerows(rows)
+
+            return jsonify({'status': 'Label updated successfully'})
+
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            return jsonify({'status': 'Error occurred', 'message': str(e)}), 500
+    else:
+        return redirect(url_for('user_login'))
+
+# Thank you page route
+@app.route('/thankyou')
+def thankyou():
+    return render_template('thankyou.html')
+
+# User logout route
+@app.route('/logout')
+def logout():
+    session.pop('username', None)  # Remove the username from session
+    return redirect(url_for('user_login'))  # Redirect back to user login page
+
+# Admin logout route
+@app.route('/admin_logout')
+def admin_logout():
+    session.pop('admin', None)  # Remove admin status from session
+    return redirect(url_for('home'))  # Redirect back to the home (welcome) page
+
 @app.route('/download_csv')
 def download_csv():
     return send_from_directory('.', 'images.csv', as_attachment=True)
 
-# تسجيل الخروج للمستخدم
-@app.route('/logout')
-def logout():
-    session.pop('username', None)  # إزالة اسم المستخدم من الجلسة
-    return redirect(url_for('user_login'))  # الانتقال إلى تسجيل دخول المستخدم
-
-# تسجيل الخروج للمشرف
-@app.route('/admin_logout')
-def admin_logout():
-    session.pop('admin', None)  # إزالة حالة المشرف من الجلسة
-    return redirect(url_for('home'))  # الانتقال إلى الصفحة الرئيسية
-
-# تشغيل التطبيق
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # قراءة المنفذ من المتغير البيئي أو استخدام 5000 كرقم افتراضي
-    app.run(host="0.0.0.0", port=port)  # تشغيل التطبيق على 0.0.0.0
+if __name__ == '_main_':
+    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))  
+    app.run(host="0.0.0.0", port=port)  
