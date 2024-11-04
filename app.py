@@ -136,6 +136,6 @@ def admin_logout():
     return redirect(url_for('home'))  # الانتقال إلى الصفحة الرئيسية
 
 # تشغيل التطبيق
-if __name__ == '__main__':
+if __name__ == '_main_':
     port = int(os.environ.get("PORT", 5000))  # قراءة المنفذ من المتغير البيئي أو استخدام 5000 كرقم افتراضي
     app.run(host="0.0.0.0", port=port)  # تشغيل التطبيق على 0.0.0.0
