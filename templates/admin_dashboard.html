@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(to bottom, #f7f9fc, #e0e7ee); /* Subtle gradient background */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px; /* Add some space between elements */
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #008CBA; /* Light blue background for headers */
+            color: white; /* White text for contrast */
+            text-transform: uppercase; /* Make header text uppercase for emphasis */
+        }
+
+        td {
+            background-color: #ffffff; /* Keep table cells white */
+        }
+
+        .logout {
+            text-align: right;
+        }
+
+        .logout a {
+            text-decoration: none;
+            font-size: 16px;
+            background-color: #008CBA;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            transition: background-color 0.3s ease; /* Hover effect */
+        }
+
+        .logout a:hover {
+            background-color: #005f7f; /* Darker color on hover */
+        }
+
+        /* Top-left corner logo and title */
+        .header {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .header img {
+            width: 100px; /* Adjust the logo size */
+            margin-right: 10px; /* Space between logo and title */
+        }
+
+        .header h1 {
+            font-size: 24px; /* Adjusted font size */
+            margin: 0;
+        }
+
+        h1 {
+            margin-top: 120px; /* Push the heading lower */
+            font-weight: normal;
+            color: #333;
+        }
+
+        h2 {
+            margin-top: 20px;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top-left corner logo and title -->
+    <div class="header">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
+        <h1>NeuroEye</h1>
+    </div>
+
+    <h1>Admin Dashboard</h1>
+
+    <div class="logout">
+        <a href="/admin_logout">Logout</a>
+    </div>
+
+    <h2>Analytics</h2>
+    <p>Total Images: {{ total_images }}</p>
+    <p>Normal Images: {{ normal_images }}</p>
+    <p>Cataract Images: {{ cataract_images }}</p>
+
+    <table>
+        <tr>
+            <th>User</th>
+            <th>Normal Images Labeled</th>
+            <th>Cataract Images Labeled</th>
+            <th>Total Images Labeled</th>
+            <th>Normal Labeled Percentage</th>
+            <th>Cataract Labeled Percentage</th>
+            <th>Total Labeled Percentage</th>
+        </tr>
+        {% for user in user_labels_normal.keys() %}
+        <tr>
+            <td>{{ user }}</td>
+            <td>{{ user_labels_normal[user] }}</td>
+            <td>{{ user_labels_cataract[user] }}</td>
+            <td>{{ total_labeled[user] }}</td>
+            <td>{{ labeled_percentage_normal[user] | round(2) }}%</td>
+            <td>{{ labeled_percentage_cataract[user] | round(2) }}%</td>
+            <td>{{ labeled_percentage_total[user] | round(2) }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>
