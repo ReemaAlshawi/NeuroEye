@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory
 import csv
-import os  # استيراد مكتبة os لاستخدام المتغيرات البيئية
+import os
 
-app = Flask(__name__)
+
+app = Flask(_name_)
 app.secret_key = 'your_secret_key'  # Replace with a secure key
 
 # Dummy databases (replace with a real database or external authentication)
@@ -120,6 +121,7 @@ def admin_dashboard():
         print(f"Error reading CSV file: {e}")
         return "Error reading CSV file", 500
 
+
 # Route to get images for the labeling process (user-specific logic)
 @app.route('/get_images', methods=['GET'])
 def get_images():
@@ -202,12 +204,12 @@ def admin_logout():
     session.pop('admin', None)  # Remove admin status from session
     return redirect(url_for('home'))  # Redirect back to the home (welcome) page
 
-# Run the app with specific host and port for Render
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # قراءة المنفذ من المتغير البيئي أو استخدام 5000 كرقم افتراضي
-    app.run(host="0.0.0.0", port=port)  # تشغيل التطبيق على 0.0.0.0
-
 @app.route('/download_csv')
 def download_csv():
-    csv_file_path = 'images.csv'  # تأكدي من صحة مسار الملف
-    return send_file(csv_file_path, as_attachment=True)
+    return send_from_directory('.', 'images.csv', as_attachment=True)
+
+if _name_ == '_main_':
+    app.run(debug=True)
+    # Run the app with specific host and port for Render
+    port = int(os.environ.get("PORT", 5000))  # قراءة المنفذ من المتغير البيئي أو استخدام 5000 كرقم افتراضي
+    app.run(host="0.0.0.0", port=port)  # تشغيل التطبيق على 0.0.0.0
