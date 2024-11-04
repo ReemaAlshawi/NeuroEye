@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory, send_file
 import csv
 import os  # استيراد مكتبة os لاستخدام المتغيرات البيئية
 
@@ -206,3 +206,8 @@ def admin_logout():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # قراءة المنفذ من المتغير البيئي أو استخدام 5000 كرقم افتراضي
     app.run(host="0.0.0.0", port=port)  # تشغيل التطبيق على 0.0.0.0
+
+@app.route('/download_csv')
+def download_csv():
+    csv_file_path = 'images.csv'  # تأكدي من صحة مسار الملف
+    return send_file(csv_file_path, as_attachment=True)
