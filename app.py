@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_from_directory, send_file
 import csv
 import os
+
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a secure key
 
@@ -84,13 +85,11 @@ def admin_dashboard():
                 total_images += 1
                 if 'normal' in row['imagePath'].lower():
                     normal_images += 1  # Count normal images
-                    # Count labels for normal images
                     for user in users:
                         if row[f'label_{user}'] != 'Null':
                             user_labels_normal[user] += 1
                 else:
                     cataract_images += 1  # Count cataract images
-                    # Count labels for cataract images
                     for user in users:
                         if row[f'label_{user}'] != 'Null':
                             user_labels_cataract[user] += 1
@@ -118,7 +117,6 @@ def admin_dashboard():
     except Exception as e:
         print(f"Error reading CSV file: {e}")
         return "Error reading CSV file", 500
-
 
 # Route to get images for the labeling process (user-specific logic)
 @app.route('/get_images', methods=['GET'])
@@ -202,11 +200,12 @@ def admin_logout():
     session.pop('admin', None)  # Remove admin status from session
     return redirect(url_for('home'))  # Redirect back to the home (welcome) page
 
+# Route to download the CSV file
 @app.route('/download_csv')
 def download_csv():
     return send_from_directory('.', 'images.csv', as_attachment=True)
 
-if __name__ == '_main_':
-    app.run(debug=True)
-    port = int(os.environ.get("PORT", 5000))  
-    app.run(host="0.0.0.0", port=port)  
+# Run the app with specific host and port for Render
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))  # قراءة المنفذ من المتغير البيئي أو استخدام 5000 كرقم افتراضي
+    app.run(host="0.0.0.0", port=port)  # تشغيل التطبيق على 0.0.0.0
