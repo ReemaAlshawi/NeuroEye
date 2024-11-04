@@ -15,7 +15,7 @@ users = {
 ADMIN_USERNAME = 'shaikha'
 ADMIN_PASSWORD = 'shaikha1'
 
-# استخدام مسار مطلق للملف
+# استخدام مسار للملف CSV داخل مجلد static
 csv_file_path = os.path.join(app.root_path, 'static', 'images.csv')
 print("CSV file path:", csv_file_path)  # للتأكد من مسار الملف
 
@@ -29,12 +29,17 @@ def ensure_csv_exists():
 # Call the function on start
 ensure_csv_exists()
 
-# Home page route to display the welcome page with options for user and admin login
+# مسار لعرض الصور من مجلد Dataset
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    return send_from_directory('Dataset', filename)
+
+# الصفحة الرئيسية
 @app.route('/')
 def home():
     return render_template('welcome.html')
 
-# User login route
+# تسجيل دخول المستخدم
 @app.route('/user_login', methods=['GET', 'POST'])
 def user_login():
     if request.method == 'POST':
@@ -47,7 +52,7 @@ def user_login():
             return "Invalid username or password."
     return render_template('user_login.html')
 
-# Labeling page (only accessible if logged in as a user)
+# صفحة التصنيف
 @app.route('/label')
 def label():
     if 'username' in session:
@@ -56,7 +61,7 @@ def label():
     else:
         return redirect(url_for('user_login'))
 
-# Admin login route
+# تسجيل دخول المشرف
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -69,7 +74,7 @@ def admin_login():
             return "Invalid admin credentials."
     return render_template('admin_login.html')
 
-# Admin dashboard route
+# لوحة المشرف
 @app.route('/admin_dashboard')
 def admin_dashboard():
     if not session.get('admin'):
@@ -117,7 +122,7 @@ def admin_dashboard():
         print(f"Error reading CSV file: {e}")
         return "Error reading CSV file", 500
 
-# Route for saving the label in the CSV file
+# حفظ التصنيفات في ملف CSV
 @app.route('/save_label', methods=['POST'])
 def save_label():
     if 'username' in session:
@@ -152,12 +157,12 @@ def save_label():
     else:
         return redirect(url_for('user_login'))
 
-# Download CSV file route
+# تنزيل ملف CSV
 @app.route('/download_csv')
 def download_csv():
-    return send_from_directory('static', 'images.csv', as_attachment=True)  # تعديل المسار ليشير إلى static
+    return send_from_directory('static', 'images.csv', as_attachment=True)
 
-# Run the app
+# تشغيل التطبيق
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
