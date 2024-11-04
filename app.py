@@ -15,7 +15,8 @@ users = {
 ADMIN_USERNAME = 'shaikha'
 ADMIN_PASSWORD = 'shaikha1'
 
-csv_file_path = 'images.csv'
+# مسار ملف CSV بعد نقله إلى static
+csv_file_path = 'static/images.csv'
 
 # Ensure the CSV file exists on start
 def ensure_csv_exists():
@@ -153,7 +154,7 @@ def save_label():
 # Download CSV file route
 @app.route('/download_csv')
 def download_csv():
-    return send_from_directory('.', 'images.csv', as_attachment=True)
+    return send_from_directory('static', 'images.csv', as_attachment=True)  # تعديل المسار ليشير إلى static
 
 # Run the app
 if __name__ == '__main__':
