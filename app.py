@@ -155,6 +155,12 @@ def save_label():
 def download_csv():
     return send_from_directory('.', 'images.csv', as_attachment=True)
 
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    return send_from_directory('Dataset', filename)
+
+
+
 # Run the app
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
