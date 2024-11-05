@@ -99,7 +99,7 @@
 
     <div class="content-container">
         <!-- Display the image on the left -->
-        <img id="image" src="static/images/image1.jpg" alt="Medical Image">
+        <img id="image" src="Dataset/Train/Cataract/cat_0_1732.jpg" alt="Medical Image">
 
         <!-- Buttons on the right -->
         <div class="button-container">
@@ -125,7 +125,7 @@
                 .then(data => {
                     images = data;
                     if (images.length > 0) {
-                        document.getElementById("image").src = `/images/${images[currentIndex]}`;
+                        document.getElementById("image").src = `/Dataset/${images[currentIndex]}`;
                     } else {
                         window.location.href = "/thankyou";  // Redirect when all images are labeled
                     }
@@ -167,7 +167,7 @@
         function nextImage() {
             currentIndex++;
             if (currentIndex < images.length) {
-                document.getElementById("image").src = `/images/${images[currentIndex]}`;
+                document.getElementById("image").src = `/Dataset/${images[currentIndex]}`;
                 document.getElementById("message").innerText = "";  // Clear the message
             } else {
                 window.location.href = "/thankyou";  // Redirect to the thank you page when no more images are left
