@@ -99,7 +99,7 @@
 
     <div class="content-container">
         <!-- Display the image on the left -->
-        <img id="image" src="" alt="Medical Image">
+        <img id="image" src="static/images/image1.jpg" alt="Medical Image">
 
         <!-- Buttons on the right -->
         <div class="button-container">
@@ -115,67 +115,64 @@
     <p id="message" style="color: green; font-weight: bold;"></p>
 
     <script>
-      let currentIndex = 0;
-    let images = [];
+        let currentIndex = 0;
+        let images = [];
 
-    // Fetch image URLs from Flask when the page loads
-    window.onload = function () {
-        fetch('/get_images')
+        // Fetch image URLs from Flask when the page loads
+        window.onload = function () {
+            fetch('/get_images')
+                .then(response => response.json())
+                .then(data => {
+                    images = data;
+                    if (images.length > 0) {
+                        document.getElementById("image").src = `/images/${images[currentIndex]}`;
+                    } else {
+                        window.location.href = "/thankyou";  // Redirect when all images are labeled
+                    }
+                })
+                .catch(error => console.error("Error fetching images:", error));
+        };
+
+        function selectLabel(label) {
+            const currentImage = images[currentIndex];
+
+            // Send the label and imagePath to the Flask backend
+            fetch('/save_label', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    imagePath: currentImage,
+                    label: label
+                })
+            })
             .then(response => response.json())
             .then(data => {
-                images = data;
-                if (images.length > 0) {
-                    // تحديد المسار الكامل للصورة
-                    document.getElementById("image").src = `/static/Dataset/${images[currentIndex]}`;
+                if (data.status === 'Label updated successfully') {
+                    document.getElementById("message").innerText = "Label added successfully!";
+                    document.getElementById("message").style.color = "green";
                 } else {
-                    window.location.href = "/thankyou";  // Redirect when all images are labeled
+                    document.getElementById("message").innerText = "Failed to add label.";
+                    document.getElementById("message").style.color = "red";
                 }
             })
-            .catch(error => console.error("Error fetching images:", error));
-    };
-
-    function selectLabel(label) {
-        const currentImage = images[currentIndex];
-
-        // Send the label and imagePath to the Flask backend
-        fetch('/save_label', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                imagePath: currentImage,
-                label: label
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'Label updated successfully') {
-                document.getElementById("message").innerText = "Label added successfully!";
-                document.getElementById("message").style.color = "green";
-            } else {
-                document.getElementById("message").innerText = "Failed to add label.";
+            .catch(error => {
+                console.error("Error saving label:", error);
+                document.getElementById("message").innerText = "An error occurred while saving the label.";
                 document.getElementById("message").style.color = "red";
-            }
-        })
-        .catch(error => {
-            console.error("Error saving label:", error);
-            document.getElementById("message").innerText = "An error occurred while saving the label.";
-            document.getElementById("message").style.color = "red";
-        });
-    }
-
-    function nextImage() {
-        currentIndex++;
-        if (currentIndex < images.length) {
-            // تحديث المسار للصورة التالية
-            document.getElementById("image").src = `/static/Dataset/${images[currentIndex]}`;
-            document.getElementById("message").innerText = "";  // Clear the message
-        } else {
-            window.location.href = "/thankyou";  // Redirect to the thank you page when no more images are left
+            });
         }
-    }
 
+        function nextImage() {
+            currentIndex++;
+            if (currentIndex < images.length) {
+                document.getElementById("image").src = `/images/${images[currentIndex]}`;
+                document.getElementById("message").innerText = "";  // Clear the message
+            } else {
+                window.location.href = "/thankyou";  // Redirect to the thank you page when no more images are left
+            }
+        }
     </script>
 
 </body>
