@@ -29,10 +29,10 @@ def ensure_csv_exists():
 # Call the function on start
 ensure_csv_exists()
 
-# مسار لعرض الصور من مجلد Dataset
+# مسار لعرض الصور من مجلد static/Dataset
 @app.route('/images/<path:filename>')
 def serve_image(filename):
-    return send_from_directory('Dataset', filename)
+    return send_from_directory('static/Dataset', filename)
 
 # الصفحة الرئيسية
 @app.route('/')
